@@ -1,4 +1,4 @@
-name: 69yun Checkin
+name: Python CI 2
 
 on:
   # 每天0点1分触发（UTC时间）
@@ -14,26 +14,25 @@ on:
       - main  # 只在主分支提交时触发
 
 jobs:
-  checkin:
+  build:
     runs-on: ubuntu-latest
     env:
-      DOMAIN: ${{ secrets.DOMAIN }}
       BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
-      CHAT_ID: ${{ secrets.CHAT_ID }}
-      EMAIL_SENDER: ${{ secrets.EMAIL_SENDER }}
-      EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
-      EMAIL_RECEIVER: ${{ secrets.EMAIL_RECEIVER }}
+      CHAT_ID: ${{ secrets.CHAT_ID }}        # 这里设置可以用于多个账户
       USER1: ${{ secrets.USER1 }}            # 用户1
       PASS1: ${{ secrets.PASS1 }}            # 密码1
       USER2: ${{ secrets.USER2 }}            # 用户2
-      PASS2: ${{ secrets.PASS2 }}            # 密码 2
+      PASS2: ${{ secrets.PASS2 }}            # 密码2
+      GMAIL_SENDER_EMAIL: ${{ secrets.GMAIL_SENDER_EMAIL }}
+      GMAIL_SENDER_PASSWORD: ${{ secrets.GMAIL_SENDER_PASSWORD }}
+      GMAIL_RECEIVER_EMAIL: ${{ secrets.GMAIL_RECEIVER_EMAIL }}
       # 可以继续扩展更多用户和密码
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v2
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v2
         with:
           python-version: '3.9'
 
@@ -42,16 +41,5 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt  # 假设你的项目有 requirements.txt
 
-      - name: Print environment variables
-        run: |
-          echo "DOMAIN: $DOMADIN"
-          echo "BOT_TOKEN: $BOT_TOKEN"
-          echo "CHAT_ID: $CHAT_ID"
-          echo "EMAIL_SENDER: $EMAIL_SENDER"
-          echo "EMAIL_PASSWORD: $EMAIL_PASSWORD"
-          echo "EMAIL_RECEIVER: $EMAIL_RECEIVER"
-          echo "USER1: $USER1"
-          echo "PASS1: $PASS1"
-
-      - name: Run 69yun checkin script
+      - name: Run Python script
         run: python 69yun.py  # 执行你的 Python 脚本
