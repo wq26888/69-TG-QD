@@ -2,6 +2,10 @@ import os
 import json
 import requests
 import time
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email.header import Header
 from bs4 import BeautifulSoup
 import re
 from datetime import datetime, timedelta
@@ -274,3 +278,80 @@ if __name__ == "__main__":
         print("----------------------------------签到信息----------------------------------")
         print(checkin(account, domain, BotToken, ChatID))
         print("---------------------------------------------------------------------------")
+# 在generate_config函数中添加邮件配置
+def generate_config():
+    # ...现有代码...
+    
+    # 添加邮件配置
+    email_sender = os.getenv('EMAIL_SENDER')
+    email_password = os.getenv('EMAIL_PASSWORD')
+    email_receiver = os.getenv('EMAIL_RECEIVER')
+    
+    config = {
+        'domain': domain,
+        'BotToken': bot_token,
+        'ChatID': chat_id,
+        'accounts': accounts,
+        'email': {
+            'sender': email_sender,
+            'password': email_password,
+            'receiver': email_receiver
+        }
+    }
+    return config
+
+# 添加邮件发送函数
+def send_email(subject, content, email_config):
+    """
+    发送邮件的函数
+    :param subject: 邮件主题
+    :param content: 邮件内容
+    :param email_config: 邮件配置信息
+    """
+    if not all([email_config.get('sender'), email_config.get('password'), email_config.get('receiver')]):
+        print("邮件配置信息不完整，跳过邮件发送")
+        return
+    
+    try:
+        msg = MIMEMultipart()
+        msg['From'] = Header(email_config['sender'])
+        msg['To'] = Header(email_config['receiver'])
+        msg['Subject'] = Header(subject, 'utf-8')
+        
+        # 添加正文
+        msg.attach(MIMEText(content, 'plain', 'utf-8'))
+        
+        # 连接Outlook SMTP服务器
+        smtp_server = "smtp-mail.outlook.com"
+        smtp_port = 587
+        
+        server = smtplib.SMTP(smtp_server, smtp_port)
+        server.starttls()
+        server.login(email_config['sender'], email_config['password'])
+        
+        # 发送邮件
+        server.sendmail(email_config['sender'], email_config['receiver'], msg.as_string())
+        server.quit()
+        print("邮件发送成功")
+    except Exception as e:
+        print(f"发送邮件时发生错误: {str(e)}")
+
+# 在checkin函数中添加邮件发送
+def checkin(account, domain, BotToken, ChatID, email_config=None):
+    # ...现有代码...
+    
+    try:
+        # ...现有代码...
+        
+        # 在发送Telegram消息后添加邮件发送
+        if email_config:
+            send_email(
+                subject="69云签到结果",
+                content=f"执行时间: {formatted_time}\n{账号信息}{用户信息}{签到结果}",
+                email_config=email_config
+            )
+        
+        return 签到结果
+    
+    except Exception as error:
+        # ...现有代码...
