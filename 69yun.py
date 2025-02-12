@@ -69,7 +69,7 @@ def fetch_and_extract_info(domain,headers):
 
 def generate_config():
     # 获取环境变量
-    domain = os.getenv('DOMAIN', 'https://69yun69.com')  # 默认值，如果未设置环境变量
+    domain = os.getenv('DOMAIN')  # 默认值，如果未设置环境变量
     bot_token = os.getenv('BOT_TOKEN')
     chat_id = os.getenv('CHAT_ID')
 
@@ -301,7 +301,7 @@ def checkin(account, domain, BotToken, ChatID, email_config=None):
         send_message(账号信息 + 用户信息 + 签到结果, BotToken, ChatID)
 
         # 在发送Telegram消息后添加邮件发送
-        if email_config:
+        if email_config and all(email_config.values()):  # 确保 email_config 存在且所有值都不为空
             # 获取当前 UTC 时间，并转换为北京时间（+8小时）
             now = datetime.utcnow()
             beijing_time = now + timedelta(hours=8)
@@ -332,6 +332,18 @@ if __name__ == "__main__":
     domain = config['domain']
     BotToken = config['BotToken']
     ChatID = config['ChatID']
+
+    # 检查环境变量是否设置
+    email_sender = os.environ.get('EMAIL_SENDER')
+    email_password = os.environ.get('EMAIL_PASSWORD')
+    email_receiver = os.environ.get('EMAIL_RECEIVER')
+
+    print(f"EMAIL_SENDER: {email_sender}")
+    print(f"EMAIL_PASSWORD: {email_password}")
+    print(f"EMAIL_RECEIVER: {email_receiver}")
+
+    print(f"DOMAIN: {domain}")  # 打印 domain 变量的值
+
     email_config = config.get('email')
 
     # 循环执行每个账号的签到任务
