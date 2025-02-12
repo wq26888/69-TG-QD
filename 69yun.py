@@ -303,4 +303,8 @@ if __name__ == "__main__":
         print("---------------------------------------------------------------------------")
 
     # 发送邮件通知
-    send_email('69云签到结果', all_checkin_results)
+    try:
+        send_email('69云签到结果', all_checkin_results)
+    except Exception as e:
+        print(f"发送邮件失败: {e}")
+
