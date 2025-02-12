@@ -337,10 +337,8 @@ def send_email(subject, content, email_config):
 
 # 在checkin函数中添加邮件发送
 def checkin(account, domain, BotToken, ChatID, email_config=None):
-    # ...现有代码...
     
     try:
-        # ...现有代码...
         
         # 在发送Telegram消息后添加邮件发送
         if email_config:
@@ -351,5 +349,4 @@ def checkin(account, domain, BotToken, ChatID, email_config=None):
             )
         
         return 签到结果
-    
     except Exception as error:
