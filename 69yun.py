@@ -150,7 +150,7 @@ def send_message(msg="", BotToken="", ChatID=""):
             return None
 
 # 登录并签到的主要函数
-def checkin(account, domain, BotToken, ChatID, sender_email, account_index):  # 添加 account_index 参数
+def checkin(account, domain, BotToken, ChatID, account_index, sender_email, initial_receiver_email):  # 添加 sender_email 和 initial_receiver_email 参数
     user = account['user']
     pass_ = account['pass']
     c_email = account['c_email']  # 获取客户邮箱
@@ -256,14 +256,13 @@ def checkin(account, domain, BotToken, ChatID, sender_email, account_index):  # 
         # 发送签到结果到 Telegram
         send_message(账号信息 + 用户信息 + checkin_result_message, BotToken, ChatID)
 
-        # 区分账号 1 和账号 2 及以后
-        if account_index == 0:  # 账号 1
-            if user == sender_email.split('@')[0]:  # 提取用户名部分进行比较
-                return checkin_result_message, sender_email  # 返回签到结果和 sender_email
-            else:
-                return None, None  # 返回 None 表示不发送邮件
-        else:  # 账号 2 及以后
-            return checkin_result_message, c_email  # 返回签到结果和 c_email
+        # 确定接收邮箱
+        if c_email:  # 如果设置了 C_EMAIL，则使用 C_EMAIL
+            receiver_email = c_email
+        else:  # 否则使用 initial_receiver_email
+            receiver_email = initial_receiver_email
+
+        return checkin_result_message, receiver_email
 
     except Exception as error:
         # 捕获异常，打印错误并发送错误信息到 Telegram
@@ -275,12 +274,13 @@ def checkin(account, domain, BotToken, ChatID, sender_email, account_index):  # 
 # 从环境变量获取 Gmail 配置
 sender_email = os.getenv('GMAIL_SENDER_EMAIL')
 sender_password = os.getenv('GMAIL_SENDER_PASSWORD')
+initial_receiver_email = os.getenv('GMAIL_RECEIVER_EMAIL')  # 获取初始接收邮箱
 
 
 def send_email(subject, content, receiver_email):  # 添加 receiver_email 参数
     # 邮件内容
     message = MIMEText(content, 'plain', 'utf-8')
-    message['From'] = email.utils.formataddr((str(Header(sender_email, 'utf-8')), sender_email))
+    message['From'] = email.utils.formataddr((str(Header(sender_email, 'utf-8')), sender_email))  # 统一使用 GMAIL_SENDER_EMAIL
     message['To'] = email.utils.formataddr((str(Header(receiver_email, 'utf-8')), receiver_email))
     message['Subject'] = Header(subject, 'utf-8').encode()
 
@@ -293,7 +293,8 @@ def send_email(subject, content, receiver_email):  # 添加 receiver_email 参�
         smtpObj.set_debuglevel(1)  # 开启调试模式
         smtpObj.ehlo()
         # 强制转换为字符串
-        smtpObj.login(sender_email.decode('utf-8') if isinstance(sender_email, bytes) else sender_password.decode('utf-8') if isinstance(sender_password, bytes) else sender_password)
+        smtpObj.login(sender_email.decode('utf-8') if isinstance(sender_email, bytes) else sender_email,
+                      sender_password.decode('utf-8') if isinstance(sender_password, bytes) else sender_password)
         smtpObj.sendmail(sender_email, [receiver_email], message.as_string())
         print("邮件发送成功")
     except smtplib.SMTPException as e:
@@ -322,7 +323,7 @@ if __name__ == "__main__":
     # 循环执行每个账号的签到任务
     for i, account in enumerate(config.get("accounts", [])):  # 添加 enumerate
         print("----------------------------------签到信息----------------------------------")
-        checkin_result, receiver_email = checkin(account, domain, BotToken, ChatID, sender_email, i)  # 获取签到结果和接收邮箱
+        checkin_result, receiver_email = checkin(account, domain, BotToken, ChatID, i, sender_email, initial_receiver_email)  # 获取签到结果和接收邮箱
         print(checkin_result)
         print("---------------------------------------------------------------------------")
 
