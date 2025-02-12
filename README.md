@@ -1,73 +1,105 @@
-# 项目配置教程
+# 69yun Auto Check-in Script
 
-## 1. 点击 Star 和 Fork 这个项目
+[![Actions Status](https://github.com/YOUR_GITHUB_USERNAME/YOUR_REPOSITORY_NAME/workflows/YOUR_WORKFLOW_NAME/badge.svg)](https://github.com/YOUR_GITHUB_USERNAME/YOUR_REPOSITORY_NAME/actions)
 
-视频教程：https://youtu.be/HjECaEIH4_s
+**声明：**
 
-### 1.1 点击 Star
+本脚本原版 fork 地址：[https://github.com/yixiu001/69yuncheckin](https://github.com/yixiu001/69yuncheckin)。本仓库版本基于这个作者的脚本，感谢原作者开源，本版本也不会收费。
 
-点个Star支持一下，非常感谢！
+对专业玩家，您可以得心应手的使用脚本的内容。
 
-### 1.2 Fork 项目
+对新手玩家，您要明白提问的智慧，要描述清楚你的问题，否则不会回复。
 
-- **步骤**：
-    1. 打开该项目的 GitHub 页面。
-    2. 在页面右上角，点击 **Fork** 按钮。
-    3. 选择你要 Fork 到的 GitHub 账户或组织。
+对伸手党，建议你可以滚蛋。
+
+本脚本请严格根据 readme 文档进行操作，不懂要问，要查资料，学会使用搜索引擎。
 
 ---
 
-## 2. 配置环境变量
+本项目旨在实现一个自动化的 69yun 签到脚本，并将签到结果通过 Telegram 和邮件发送给用户。
 
-### 2.1 在 GitHub 中设置 Secrets（环境变量）
+## 准备工作
 
-为了让 CI/CD 流程使用敏感信息（如 `BOT_TOKEN`, `CHAT_ID`, `USER1`, `PASS1` 等），我们使用 GitHub 的 **Secrets** 功能存储环境变量，这样可以安全地管理配置。
+在开始之前，请确保您拥有以下账号：
 
-- **步骤**：
-    1. 打开你的 GitHub 仓库页面。
-    2. 点击页面右上角的 **Settings** 按钮。
-    3. 在左侧菜单栏找到 **Secrets and variables**，点击 **Actions**。
-    4. 点击 **New repository secret** 按钮，添加以下 Secrets：
-        - `BOT_TOKEN`：你的 Bot Token。
-        - `CHAT_ID`：你的 Chat ID。
-        - `USER1`, `USER2`, `USER3`（根据需要添加）：第一个、第二个、第三个用户的用户名（如邮件地址）。
-        - `PASS1`, `PASS2`, `PASS3`（根据需要添加）：与上述用户对应的密码。
+*   GitHub 账号
+*   69yun 账号
+*   Telegram 账号 (可选，用于接收 Telegram 通知)
+*   Gmail 账号 (用于发送邮件)
 
-> **注意**：Secrets 一旦设置好后，GitHub Actions 会自动读取它们，无需手动在每次提交时修改代码，但是在工作流中只配置了2个账户，所以需要添加更多账户的话，请手动修改yaml文件。
+## 使用方法
 
-### 2.2 在 GitHub Actions 中引用环境变量
+1.  **Fork 仓库：** 点击 GitHub 页面右上角的 "Fork" 按钮，将本项目 Fork 到您的 GitHub 账号下。
 
-GitHub Actions 会自动加载你设置在 **Secrets** 中的环境变量，你可以在 `.yaml` 文件中通过 `${{ secrets.<secret_name> }}` 的方式引用这些环境变量。
+2.  **启用 Actions：** 在您的 Fork 仓库的 "Settings" -> "Actions" -> "General" 中，确保 Actions 处于启用状态。如果显示 "Actions are disabled on this repository"，请选择 "Allow all actions and reusable workflows" 或 "Allow select actions"，然后点击 "Save"。
 
-#### 如果需要添加更多账户请手动修改.github/workflows/69yuncheckin.yaml文件的如下内容
+3.  **设置 GitHub Secrets (环境变量)：**
 
-```yaml
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    env:
-      BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
-      CHAT_ID: ${{ secrets.CHAT_ID }}        # 这里设置可以用于多个账户
-      USER1: ${{ secrets.USER1 }}            # 用户1
-      PASS1: ${{ secrets.PASS1 }}            # 密码1
-      USER2: ${{ secrets.USER2 }}            # 用户2
-      PASS2: ${{ secrets.PASS2 }}            # 密码2
-      # 可以继续扩展更多用户和密码，例如
-      USER3: ${{ secrets.USER3 }}            # 用户3
-      PASS3: ${{ secrets.PASS3 }}            # 密码3
-      USER4: ${{ secrets.USER4 }}            # 用户4
-      PASS4: ${{ secrets.PASS4 }}            # 密码4
-```
+    在您的 Fork 仓库的 "Settings" -> "Secrets" -> "Actions" 中，添加以下 Secrets：
 
-### 2.3 手动运行工作流，后续每天都会自动运行
+    *   **`DOMAIN`：** 您的 69yun 域名 (例如：`https://69yun69.com`)。
+    *   **`BOT_TOKEN`：** 您的 Telegram Bot Token (如果您想使用 Telegram 通知)。  
+        *   获取方式：向 [BotFather](https://t.me/BotFather) 发送 `/newbot` 指令创建 Bot。
+    *   **`CHAT_ID`：** 您的 Telegram Chat ID (如果您想使用 Telegram 通知)。 
+        *   获取方式：将 Bot 加入您的频道/群组，然后使用 [get_id_bot](https://t.me/get_id_bot) 获取 Chat ID。
+    *   **`GMAIL_SENDER_EMAIL`：** 您的 Gmail 发送邮箱地址 (用于发送邮件)。
+    *   **`GMAIL_SENDER_PASSWORD`：** 您的 Gmail 发送邮箱密码或应用专用密码 (用于发送邮件)。
+    *   **`GMAIL_RECEIVER_EMAIL`：** 您的 Gmail 初始接收邮箱地址 (用于接收未设置 `C_EMAIL` 的用户的邮件)。
+    *   **`USER1`：** 第一个 69yun 账号的用户名 (邮箱地址)。
+    *   **`PASS1`：** 第一个 69yun 账号的密码。
+    *   **`C_EMAIL1`：** 第一个 69yun 账号的自定义接收邮箱地址 (可选，如果未设置，将发送到 `GMAIL_RECEIVER_EMAIL`)。
+    *   **`USER2`：** 第二个 69yun 账号的用户名 (邮箱地址)。
+    *   **`PASS2`：** 第二个 69yun 账号的密码。
+    *   **`C_EMAIL2`：** 第二个 69yun 账号的自定义接收邮箱地址 (可选，如果未设置，将发送到 `GMAIL_RECEIVER_EMAIL`)。
+    *   **以此类推，添加更多账号的 `USER(序号)`、`PASS(序号)` 和 `C_EMAIL(序号)` Secrets。**
 
---- 
+    **重要说明：**
 
-# 二次修改
+    *   **`GMAIL_SENDER_EMAIL`：** 所有邮件都将使用此邮箱作为发件人。
+    *   **`GMAIL_RECEIVER_EMAIL`：** 如果某个账号没有设置 `C_EMAIL(序号)`，则该账号的签到结果将发送到此邮箱。
+    *   **`C_EMAIL(序号)`：** 如果您希望某个账号的签到结果发送到特定的邮箱，请设置此 Secret。
 
-- 加入“邮箱通知功能”
-- 需要设置环境变量或机密如下
-    - EMAIL_SENDER: 你的邮箱账号
-    - EMAIL_PASSWORD: 你的邮箱专用密码（请主动查询教程配置，小白勿动）
-    - EMAIL_RECEIVER: 接收邮件的账号（可以和邮箱账号设置为同一个）
-    
+4.  **配置 GitHub Actions 工作流：**
+
+    *   本项目使用 GitHub Actions 实现自动化签到。
+    *   您无需修改工作流文件 (`.github/workflows/your_workflow_name.yml`)，除非您需要更改签到频率。
+    *   默认情况下，脚本每天早上 8:00 UTC 执行。  您可以修改 `cron` 表达式来调整执行时间。
+
+5.  **启用 Gmail "允许安全性较低的应用访问" 或设置应用专用密码：**
+
+    *   如果您使用 Gmail 发送邮件，您需要在您的 Gmail 账号中启用 "允许安全性较低的应用访问" (不推荐，存在安全风险) 或设置应用专用密码 (推荐)。
+        *   **启用 "允许安全性较低的应用访问"：** 登录您的 Gmail 账号，访问 [https://myaccount.google.com/lesssecureapps](https://myaccount.google.com/lesssecureapps)，然后启用 "允许安全性较低的应用访问"。
+        *   **设置应用专用密码：** 登录您的 Gmail 账号，访问 [https://myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords)，选择 "邮件" 和 "其他设备"，然后生成一个应用专用密码。
+
+6.  **运行脚本：**
+
+    *   您可以手动触发 GitHub Actions 工作流，或者等待定时任务自动触发。
+        *   **手动触发：** 在您的 Fork 仓库的 "Actions" 页面，选择您的工作流，然后点击 "Run workflow"。
+
+## 脚本运行逻辑
+
+1.  脚本会读取您在 GitHub Secrets 中设置的配置信息。
+2.  脚本会循环执行每个账号的签到任务。
+3.  脚本会将每个账号的签到结果发送到 Telegram (如果配置了 `BOT_TOKEN` 和 `CHAT_ID`)。
+4.  脚本会将每个账号的签到结果发送到对应的邮箱：
+    *   如果设置了 `C_EMAIL(序号)`，则发送到 `C_EMAIL(序号)` 指定的邮箱。
+    *   否则，发送到 `GMAIL_RECEIVER_EMAIL` 指定的邮箱。
+5.  所有邮件都将使用 `GMAIL_SENDER_EMAIL` 作为发件人。
+
+## 注意事项
+
+*   请务必保护好您的 GitHub Secrets，不要泄露您的账号密码和 Telegram Bot Token。
+*   请确保您的 69yun 账号密码正确。
+*   如果遇到任何问题，请查看 GitHub Actions 的运行日志，或者提交 Issue。
+
+## 贡献
+
+欢迎提交 Issue 和 Pull Request！
+
+## License
+
+[MIT](LICENSE)
+
+## 感谢
+
+感谢所有为本项目做出贡献的人！
