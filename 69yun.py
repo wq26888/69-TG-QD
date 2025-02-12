@@ -5,10 +5,12 @@ import time
 from bs4 import BeautifulSoup
 import re
 from datetime import datetime, timedelta
+import smtplib
+from email.mime.text import MIMEText
+from email.header import Header
 
 # 配置文件路径
 config_file_path = "config.json"
-签到结果 = ""
 
 # 获取html中的用户信息
 def fetch_and_extract_info(domain,headers):
@@ -149,7 +151,7 @@ def checkin(account, domain, BotToken, ChatID):
     user = account['user']
     pass_ = account['pass']
 
-    签到结果 = f"地址: {domain[:9]}****{domain[-5:]}\n账号: {user[:1]}****{user[-5:]}\n密码: {pass_[:1]}****{pass_[-1]}\n\n"
+    checkin_result_message = f"地址: {domain[:9]}****{domain[-5:]}\n账号: {user[:1]}****{user[-5:]}\n密码: {pass_[:1]}****{pass_[-1]}\n\n"
 
     try:
         # 检查必要的配置参数是否存在
@@ -238,9 +240,9 @@ def checkin(account, domain, BotToken, ChatID):
             # 账号信息的展示，注意密码用 <tg-spoiler> 标签隐藏
             # 根据返回的结果更新签到信息
             if checkin_result.get('ret') == 1 or checkin_result.get('ret') == 0:
-                签到结果 = f"🎉 签到结果 🎉\n {checkin_result.get('msg', '签到成功' if checkin_result['ret'] == 1 else '签到失败')}"
+                checkin_result_message = f"🎉 签到结果 🎉\n {checkin_result.get('msg', '签到成功' if checkin_result['ret'] == 1 else '签到失败')}"
             else:
-                签到结果 = f"🎉 签到结果 🎉\n {checkin_result.get('msg', '签到结果未知')}"
+                checkin_result_message = f"🎉 签到结果 🎉\n {checkin_result.get('msg', '签到结果未知')}"
         except Exception as e:
             # 如果出现解析错误，检查是否由于登录失效
             if "登录" in response_text:
@@ -248,36 +250,15 @@ def checkin(account, domain, BotToken, ChatID):
             raise ValueError(f"解析签到响应失败: {str(e)}\n\n原始响应: {response_text}")
 
         # 发送签到结果到 Telegram
-        send_message(账号信息 + 用户信息 + 签到结果, BotToken, ChatID)
-        return 签到结果
+        send_message(账号信息 + 用户信息 + checkin_result_message, BotToken, ChatID)
+        return checkin_result_message
 
     except Exception as error:
         # 捕获异常，打印错误并发送错误信息到 Telegram
         print(f'{user}账号签到异常:', error)
-        签到结果 = f"签到过程发生错误: {error}"
-        send_message(签到结果, BotToken, ChatID)
-        return 签到结果
-
-# 主程序执行逻辑
-if __name__ == "__main__":
-
-    # 读取配置
-    config = generate_config()
-
-    # 读取全局配置
-    domain = config['domain']
-    BotToken = config['BotToken']
-    ChatID = config['ChatID']
-
-    # 循环执行每个账号的签到任务
-    for account in config.get("accounts", []):
-        print("----------------------------------签到信息----------------------------------")
-        print(checkin(account, domain, BotToken, ChatID))
-        print("---------------------------------------------------------------------------")
-
-import smtplib
-from email.mime.text import MIMEText
-from email.header import Header
+        checkin_result_message = f"签到过程发生错误: {error}"
+        send_message(checkin_result_message, BotToken, ChatID)
+        return checkin_result_message
 
 # 从环境变量获取 Gmail 配置
 sender_email = os.getenv('GMAIL_SENDER_EMAIL')
@@ -300,8 +281,9 @@ def send_email(subject, content):
     except smtplib.SMTPException as e:
         print("Error: 无法发送邮件", e)
 
-# 在主程序中调用发送邮件的函数
+# 主程序执行逻辑
 if __name__ == "__main__":
+
     # 读取配置
     config = generate_config()
 
@@ -310,11 +292,15 @@ if __name__ == "__main__":
     BotToken = config['BotToken']
     ChatID = config['ChatID']
 
+    all_checkin_results = ""
+
     # 循环执行每个账号的签到任务
     for account in config.get("accounts", []):
         print("----------------------------------签到信息----------------------------------")
-        print(checkin(account, domain, BotToken, ChatID))
+        checkin_result = checkin(account, domain, BotToken, ChatID)
+        print(checkin_result)
+        all_checkin_results += checkin_result + "\n"
         print("---------------------------------------------------------------------------")
 
     # 发送邮件通知
-    send_email('69云签到结果', 签到结果)
+    send_email('69云签到结果', all_checkin_results)
