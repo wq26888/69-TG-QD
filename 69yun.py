@@ -2,18 +2,9 @@ import os
 import json
 import requests
 import time
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-from email.header import Header
 from bs4 import BeautifulSoup
 import re
 from datetime import datetime, timedelta
-from google.oauth2.credentials import Credentials
-from googleapiclient.discovery import build
-from googleapiclient.errors import HttpError
-from google_auth_httplib2 import AuthorizedHttp
-import base64
 
 # 配置文件路径
 config_file_path = "config.json"
@@ -70,11 +61,11 @@ def fetch_and_extract_info(domain,headers):
                 # print(f"Clash 订阅链接: https://checkhere.top/link/{link.group(1)}?clash=1")
                 # print(f"v2ray 订阅链接: https://checkhere.top/link/{link.group(1)}?sub=3")
                 break
-        return 用户信息
+    return 用户信息
 
 def generate_config():
     # 获取环境变量
-    domain = os.getenv('DOMAIN', 'https://69yun69.com')  # 添加默认值
+    domain = os.getenv('DOMAIN', 'https://69yun69.com')  # 默认值，如果未设置环境变量
     bot_token = os.getenv('BOT_TOKEN')
     chat_id = os.getenv('CHAT_ID')
 
@@ -88,46 +79,22 @@ def generate_config():
     while True:
         user = os.getenv(f'USER{index}')
         password = os.getenv(f'PASS{index}')
-        custom_email_sender = os.getenv(f'EMAIL_SENDER{index}')
-        custom_email_receiver = os.getenv(f'EMAIL_RECEIVER{index}')
-        custom_google_credentials = os.getenv(f'GOOGLE_CREDENTIALS{index}')
 
-        account = {
-            'user': user,
-            'pass': password,
-        }
-
-        if user and password:
-            if custom_email_sender and custom_email_receiver and custom_google_credentials:
-                account['custom_email'] = {
-                    'sender': custom_email_sender,
-                    'receiver': custom_email_receiver,
-                    'google_credentials': custom_google_credentials
-                }
-            accounts.append(account)
-        else:
+        if not user or not password:
             break  # 如果没有找到更多的用户信息，则退出循环
 
+        accounts.append({
+            'user': user,
+            'pass': password
+        })
         index += 1
-
-    # 添加邮件配置
-    email_sender = "yanyujiangnan03@gmail.com"  # 默认发件人
-    email_password = os.getenv('GMAIL_PASSWORD')  # 从环境变量读取密码
-    email_receiver = os.getenv('EMAIL_RECEIVER', 'custom_email')  # 默认收件人，如果未设置环境变量，则为 custom_email
-    google_credentials = None  # 不再使用全局凭据
 
     # 构造配置数据
     config = {
         'domain': domain,
         'BotToken': bot_token,
         'ChatID': chat_id,
-        'accounts': accounts,
-        'email': {
-            'sender': email_sender,
-            'password': email_password,
-            'receiver': email_receiver,
-            'google_credentials': google_credentials  # 不再使用
-        }
+        'accounts': accounts
     }
     print(config)
     return config
@@ -155,10 +122,10 @@ def send_message(msg="", BotToken="", ChatID=""):
                     {
                         "text": "一休交流群",
                         "url": "https://t.me/yxjsjl"
-                        }
-                    ]
+                    }
                 ]
-            }
+            ]
+        }
 
         # 发送消息时附带内联按钮
         url = f"https://api.telegram.org/bot{BotToken}/sendMessage"
@@ -177,47 +144,8 @@ def send_message(msg="", BotToken="", ChatID=""):
             print(f"发送电报消息时发生错误: {str(e)}")
             return None
 
-# 添加邮件发送函数
-def send_email(subject, content, email_config):
-    """
-    发送邮件的函数
-    :param subject: 邮件主题
-    :param content: 邮件内容
-    :param email_config: 邮件配置信息
-    """
-    if not all([email_config.get('sender'), email_config.get('password'), email_config.get('receiver')]):
-        print("邮件配置信息不完整，跳过邮件发送")
-        return
-
-    try:
-        msg = MIMEMultipart()
-        msg['From'] = Header(email_config['sender'])
-        msg['To'] = Header(email_config['receiver'])
-        msg['Subject'] = Header(subject, 'utf-8')
-
-        # 添加正文
-        msg.attach(MIMEText(content, 'plain', 'utf-8'))
-
-        # 连接Gmail SMTP服务器
-        smtp_server = "smtp.gmail.com"
-        smtp_port = 587
-
-        server = smtplib.SMTP(smtp_server, smtp_port)
-        server.starttls()
-        server.login(email_config['sender'], email_config['password'])  # 使用你的 Gmail 邮箱和密码
-
-        # 发送邮件
-        server.sendmail(email_config['sender'], email_config['receiver'], msg.as_string())
-        server.quit()
-        print("邮件发送成功")
-    except Exception as e:
-        print(f"发送邮件时发生错误: {str(e)}")
-
 # 登录并签到的主要函数
-def checkin(account, domain, BotToken, ChatID, email_config=None):
-    if domain is None:
-        raise ValueError("DOMAIN 环境变量未设置")
-
+def checkin(account, domain, BotToken, ChatID):
     user = account['user']
     pass_ = account['pass']
 
@@ -321,16 +249,72 @@ def checkin(account, domain, BotToken, ChatID, email_config=None):
 
         # 发送签到结果到 Telegram
         send_message(账号信息 + 用户信息 + 签到结果, BotToken, ChatID)
+        return 签到结果
 
-        # 确定使用哪个 email 配置
-        account_email_config = account.get('custom_email') or email_config
+    except Exception as error:
+        # 捕获异常，打印错误并发送错误信息到 Telegram
+        print(f'{user}账号签到异常:', error)
+        签到结果 = f"签到过程发生错误: {error}"
+        send_message(签到结果, BotToken, ChatID)
+        return 签到结果
 
-        # 在发送Telegram消息后添加邮件发送
-        if account_email_config and all(account_email_config.values()):  # 确保 email_config 存在且所有值都不为空
-            # 获取当前 UTC 时间，并转换为北京时间（+8小时）
-            now = datetime.utcnow()
-            beijing_time = now + timedelta(hours=8)
-            formatted_time = beijing_time.strftime("%Y-%m-%d %H:%M:%S")
+# 主程序执行逻辑
+if __name__ == "__main__":
 
-            # 使用全局密码
-            account_email
+    # 读取配置
+    config = generate_config()
+
+    # 读取全局配置
+    domain = config['domain']
+    BotToken = config['BotToken']
+    ChatID = config['ChatID']
+
+    # 循环执行每个账号的签到任务
+    for account in config.get("accounts", []):
+        print("----------------------------------签到信息----------------------------------")
+        print(checkin(account, domain, BotToken, ChatID))
+        print("---------------------------------------------------------------------------")
+
+import smtplib
+from email.mime.text import MIMEText
+from email.header import Header
+
+# 从环境变量获取 Gmail 配置
+sender_email = os.getenv('GMAIL_SENDER_EMAIL')
+sender_password = os.getenv('GMAIL_SENDER_PASSWORD')
+receiver_email = os.getenv('GMAIL_RECEIVER_EMAIL')
+
+def send_email(subject, content):
+    # 邮件内容
+    message = MIMEText(content, 'plain', 'utf-8')
+    message['From'] = Header(sender_email, 'utf-8')
+    message['To'] =  Header(receiver_email, 'utf-8')
+    message['Subject'] = Header(subject, 'utf-8')
+
+    try:
+        smtpObj = smtplib.SMTP_SSL('smtp.gmail.com', 465)
+        smtpObj.ehlo()
+        smtpObj.login(sender_email, sender_password)
+        smtpObj.sendmail(sender_email, [receiver_email], message.as_string())
+        print("邮件发送成功")
+    except smtplib.SMTPException as e:
+        print("Error: 无法发送邮件", e)
+
+# 在主程序中调用发送邮件的函数
+if __name__ == "__main__":
+    # 读取配置
+    config = generate_config()
+
+    # 读取全局配置
+    domain = config['domain']
+    BotToken = config['BotToken']
+    ChatID = config['ChatID']
+
+    # 循环执行每个账号的签到任务
+    for account in config.get("accounts", []):
+        print("----------------------------------签到信息----------------------------------")
+        print(checkin(account, domain, BotToken, ChatID))
+        print("---------------------------------------------------------------------------")
+
+    # 发送邮件通知
+    send_email('69云签到结果', 签到结果)
