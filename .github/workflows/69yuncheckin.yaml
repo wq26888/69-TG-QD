@@ -44,7 +44,7 @@ jobs:
 
       - name: Print environment variables
         run: |
-          echo "DOMAIN: $DOMAIN"
+          echo "DOMAIN: $DOMADIN"
           echo "BOT_TOKEN: $BOT_TOKEN"
           echo "CHAT_ID: $CHAT_ID"
           echo "EMAIL_SENDER: $EMAIL_SENDER"
