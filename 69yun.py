@@ -280,8 +280,7 @@ if __name__ == "__main__":
         print("---------------------------------------------------------------------------")
 # 在generate_config函数中添加邮件配置
 def generate_config():
-    # ...现有代码...
-    
+
     # 添加邮件配置
     email_sender = os.getenv('EMAIL_SENDER')
     email_password = os.getenv('EMAIL_PASSWORD')
@@ -354,4 +353,3 @@ def checkin(account, domain, BotToken, ChatID, email_config=None):
         return 签到结果
     
     except Exception as error:
-        # ...现有代码...
