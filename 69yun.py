@@ -275,7 +275,9 @@ def send_email(subject, content):
     try:
         smtpObj = smtplib.SMTP_SSL('smtp.gmail.com', 465)
         smtpObj.ehlo()
-        smtpObj.login(sender_email, sender_password)
+        # 强制转换为字符串
+        smtpObj.login(sender_email.decode('utf-8') if isinstance(sender_email, bytes) else sender_email,
+                      sender_password.decode('utf-8') if isinstance(sender_password, bytes) else sender_password)
         smtpObj.sendmail(sender_email, [receiver_email], message.as_string())
         print("邮件发送成功")
     except smtplib.SMTPException as e:
@@ -307,4 +309,3 @@ if __name__ == "__main__":
         send_email('69云签到结果', all_checkin_results)
     except Exception as e:
         print(f"发送邮件失败: {e}")
-
