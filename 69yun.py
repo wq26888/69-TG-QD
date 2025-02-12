@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 import smtplib
 from email.mime.text import MIMEText
 from email.header import Header
+import email.utils
 
 # 配置文件路径
 config_file_path = "config.json"
@@ -268,9 +269,9 @@ receiver_email = os.getenv('GMAIL_RECEIVER_EMAIL')
 def send_email(subject, content):
     # 邮件内容
     message = MIMEText(content, 'plain', 'utf-8')
-    message['From'] = Header(sender_email, 'utf-8')
-    message['To'] =  Header(receiver_email, 'utf-8')
-    message['Subject'] = Header(subject, 'utf-8')
+    message['From'] = email.utils.formataddr((str(Header(sender_email, 'utf-8')), sender_email))
+    message['To'] = email.utils.formataddr((str(Header(receiver_email, 'utf-8')), receiver_email))
+    message['Subject'] = Header(subject, 'utf-8').encode()
 
     try:
         smtpObj = smtplib.SMTP_SSL('smtp.gmail.com', 465)
