@@ -1,6 +1,8 @@
-# 69yun Auto Check-in Script
+# 69yun 自动签到脚本
 
-[![Actions Status](https://github.com/YOUR_GITHUB_USERNAME/YOUR_REPOSITORY_NAME/workflows/YOUR_WORKFLOW_NAME/badge.svg)](https://github.com/YOUR_GITHUB_USERNAME/YOUR_REPOSITORY_NAME/actions)
+运行效果（进行了多账户区分）
+<img width="386" alt="image" src="https://github.com/user-attachments/assets/ad8df3bc-0f49-4fba-b05c-3bb76005527e" />
+
 
 **声明：**
 
