@@ -27,7 +27,7 @@
 
 ## 使用 VPN
 
-1.  **选择 VPN：** 选择一个稳定可靠的 VPN 服务，例如 **69yun VPN ([a.com](a.com))**。
+1.  **选择 VPN：** 选择一个稳定可靠的 VPN 服务，例如 **69云：[点击查看](https://69yun69.com/auth/register?code=RkTQcS)**。
 2.  **连接 VPN：** 每次登录 Gmail 邮箱时，都连接到 VPN，并选择一个非您所在地区的服务器。
 3.  **避免频繁更换 IP：** 尽量避免频繁更换 VPN 服务器，以免触发 Google 的安全机制。
 
