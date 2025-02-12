@@ -179,13 +179,13 @@ def send_email(subject, content, email_config):
         # 添加正文
         msg.attach(MIMEText(content, 'plain', 'utf-8'))
 
-        # 连接Outlook SMTP服务器
-        smtp_server = "smtp-mail.outlook.com"
+        # 连接Gmail SMTP服务器
+        smtp_server = "smtp.gmail.com"
         smtp_port = 587
 
         server = smtplib.SMTP(smtp_server, smtp_port)
         server.starttls()
-        server.login(email_config['sender'], email_config['password'])
+        server.login(email_config['sender'], email_config['password'])  # 使用你的 Gmail 邮箱和密码
 
         # 发送邮件
         server.sendmail(email_config['sender'], email_config['receiver'], msg.as_string())
