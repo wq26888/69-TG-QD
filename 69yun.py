@@ -65,11 +65,11 @@ def fetch_and_extract_info(domain,headers):
                 # print(f"Clash 订阅链接: https://checkhere.top/link/{link.group(1)}?clash=1")
                 # print(f"v2ray 订阅链接: https://checkhere.top/link/{link.group(1)}?sub=3")
                 break
-    return 用户信息
+        return 用户信息
 
 def generate_config():
     # 获取环境变量
-    domain = os.getenv('DOMADIN')  # 默认值，如果未设置环境变量
+    domain = os.getenv('DOMAIN', 'https://69yun69.com')  # 添加默认值
     bot_token = os.getenv('BOT_TOKEN')
     chat_id = os.getenv('CHAT_ID')
 
@@ -136,10 +136,10 @@ def send_message(msg="", BotToken="", ChatID=""):
                     {
                         "text": "一休交流群",
                         "url": "https://t.me/yxjsjl"
-                    }
+                        }
+                    ]
                 ]
-            ]
-        }
+            }
 
         # 发送消息时附带内联按钮
         url = f"https://api.telegram.org/bot{BotToken}/sendMessage"
@@ -196,6 +196,9 @@ def send_email(subject, content, email_config):
 
 # 登录并签到的主要函数
 def checkin(account, domain, BotToken, ChatID, email_config=None):
+    if domain is None:
+        raise ValueError("DOMAIN 环境变量未设置")
+
     user = account['user']
     pass_ = account['pass']
 
