@@ -88,6 +88,11 @@
     *   否则，发送到 `GMAIL_RECEIVER_EMAIL` 指定的邮箱。
 5.  所有邮件都将使用 `GMAIL_SENDER_EMAIL` 作为发件人。
 
+## 建议和攻略
+
+[点击查看 Gmail 邮箱申请和使用建议](opinion.md)
+
+
 ## 注意事项
 
 *   请务必保护好您的 GitHub Secrets，不要泄露您的账号密码和 Telegram Bot Token。
