@@ -1,9 +1,9 @@
 name: 69云签到
 
 on:
+  workflow_dispatch:  # 允许手动触发
   schedule:
-    - cron: '0 8 * * *'  # 每天早上 8:00 UTC 执行
-  workflow_dispatch:
+    - cron: '0 16 * * *'  # 每天 UTC 16:00 执行 (北京时间 00:00)
 
 jobs:
   checkin:
@@ -24,6 +24,7 @@ jobs:
           pip install requests beautifulsoup4
 
       - name: Run 69yun.py
+        id: run_script  # 添加一个 ID，方便后续步骤引用
         env:
           DOMAIN: ${{ secrets.DOMAIN }}
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
@@ -33,9 +34,30 @@ jobs:
           GMAIL_RECEIVER_EMAIL: ${{ secrets.GMAIL_RECEIVER_EMAIL }}
           USER1: ${{ secrets.USER1 }}
           PASS1: ${{ secrets.PASS1 }}
-          C_EMAIL1: ${{ secrets.C_EMAIL1 }}  # 添加 C_EMAIL1
+          C_EMAIL1: ${{ secrets.C_EMAIL1 }}
           USER2: ${{ secrets.USER2 }}
           PASS2: ${{ secrets.PASS2 }}
-          C_EMAIL2: ${{ secrets.C_EMAIL2 }}  # 添加 C_EMAIL2
+          C_EMAIL2: ${{ secrets.C_EMAIL2 }}
           # ... 添加更多用户和 C_EMAIL 环境变量
         run: python 69yun.py
+
+      - name: Backup Run (北京时间 00:05)
+        if: ${{ failure() && github.event_name == 'schedule' }}  # 仅在计划任务失败时运行
+        env:
+          DOMAIN: ${{ secrets.DOMAIN }}
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          CHAT_ID: ${{ secrets.CHAT_ID }}
+          GMAIL_SENDER_EMAIL: ${{ secrets.GMAIL_SENDER_EMAIL }}
+          GMAIL_SENDER_PASSWORD: ${{ secrets.GMAIL_SENDER_PASSWORD }}
+          GMAIL_RECEIVER_EMAIL: ${{ secrets.GMAIL_RECEIVER_EMAIL }}
+          USER1: ${{ secrets.USER1 }}
+          PASS1: ${{ secrets.PASS1 }}
+          C_EMAIL1: ${{ secrets.C_EMAIL1 }}
+          USER2: ${{ secrets.USER2 }}
+          PASS2: ${{ secrets.PASS2 }}
+          C_EMAIL2: ${{ secrets.C_EMAIL2 }}
+          # ... 添加更多用户和 C_EMAIL 环境变量
+        run: |
+          echo "Backup run starting..."
+          sleep 300  # 等待 5 分钟 (300 秒)
+          python 69yun.py
