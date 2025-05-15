@@ -3,7 +3,7 @@ name: 69云签到
 on:
   workflow_dispatch:  # 允许手动触发
   schedule:
-    - cron: '0 16 * * *'  # 每天 UTC 16:00 执行 (北京时间 00:00)
+    - cron: '12 18 * * *'  # 每天 UTC 16:00 执行 (北京时间 00:00)
 
 jobs:
   checkin:
